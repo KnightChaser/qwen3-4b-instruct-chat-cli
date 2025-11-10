@@ -4,6 +4,7 @@ from __future__ import annotations
 import sys
 from typing import List
 
+from quiet import quiet_stdio, apply_library_quiet_logging
 from qwen3_chat import Qwen3ChatEngine, Qwen3Config, ChatMessage
 from io_utils import safe_input
 
@@ -12,7 +13,10 @@ def run_cli() -> None:
     print("Qwen3 CLI Chat (type /exit to quit)")
     print("Loading model... (first run may download weights)")
 
-    engine = Qwen3ChatEngine(Qwen3Config())
+    apply_library_quiet_logging()
+
+    with quiet_stdio():
+        engine = Qwen3ChatEngine(Qwen3Config())
 
     # System prompt: keep it short and neutral
     messages: List[ChatMessage] = [
@@ -45,7 +49,8 @@ def run_cli() -> None:
             messages.append(ChatMessage(role="user", content=user_input))
 
             # Generate a reply
-            reply = engine.chat(messages)
+            with quiet_stdio():
+                reply = engine.chat(messages)
             messages.append(ChatMessage(role="assistant", content=reply))
 
             # Print model response
