@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Literal
+from typing import List, Literal, Any
 
 from vllm import LLM, SamplingParams
+from transformers import AutoTokenizer
 
 
 Role = Literal["system", "user", "assistant"]
@@ -31,6 +32,7 @@ class Qwen3ChatEngine:
     """
     config: Qwen3Config = field(default_factory=Qwen3Config)
     _llm: LLM | None = field(init=False, default=None)
+    _tokenizer: Any = field(init=False, default=None)
 
     def __post_init__(self) -> None:
         self._llm = LLM(
@@ -38,6 +40,9 @@ class Qwen3ChatEngine:
             trust_remote_code=True,
             max_model_len=self.config.max_model_len,
         )
+
+        # Initialize tokenizer
+        self._tokenizer = AutoTokenizer.from_pretrained(self.config.model_name)
 
     def _build_prompt(self, messages: List[ChatMessage]) -> str:
         """
@@ -53,24 +58,21 @@ class Qwen3ChatEngine:
         Returns:
             The constructed prompt string.
         """
-        system_prefix: str = ""
-        remaining: List[ChatMessage] = messages
+        if self._tokenizer is None:
+            raise RuntimeError("Tokenizer not initialized.")
 
-        if messages and messages[0].role == "system":
-            system_prefix = f"System: {messages[0].content.strip()}\n\n"
-            remaining = messages[1:]
+        # Convert our dataclass messages into HF-style dict messages
+        hf_messages = [
+            {"role": msg.role, "content": msg.content} for msg in messages
+        ]
 
-        lines: List[str] = []
-        for m in remaining:
-            if m.role == "user":
-                lines.append(f"User: {m.content.strip()}")
-            elif m.role == "assistant":
-                lines.append(f"Assistant: {m.content.strip()}")
-            else:
-                raise ValueError(f"Unexpected role: {m.role}, expected 'user' or 'assistant'.")
+        prompt: str = self._tokenizer.apply_chat_template(
+            hf_messages,
+            tokenize=False,
+            add_generation_prompt=True,
+        )
 
-        full_prompt = system_prefix + "\n".join(lines) + "Assistant: "
-        return full_prompt
+        return prompt
 
     def chat(
         self,
