@@ -13,7 +13,6 @@ An example command-line interface (CLI) for interacting with the Qwen 3.4B Instr
 uv venv --python 3.12 --seed
 source .venv/bin/activate
 uv pip install vllm --torch-backend=auto
-uv add transformers
 ```
 
 2. Run and engage with the AI model! >_<
