@@ -100,7 +100,10 @@ class Qwen3ChatEngine:
             max_tokens=max_tokens if max_tokens is not None else self.config.max_tokens,
         )
         prompt = self._build_prompt(messages)
-        outputs = self._llm.generate([prompt], sampling_params)
+        # NOTE:
+        # Set `use_tqdm` as False to disable progress bar in CLI mode and
+        # avoid potential error that elapsed time goes 0 and causes DivideByZeroError.
+        outputs = self._llm.generate([prompt], sampling_params, use_tqdm=False)
 
         # We only send one prompt
         output = outputs[0]
