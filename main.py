@@ -1,30 +1,60 @@
-from vllm import LLM, SamplingParams
+# main.py
+from __future__ import annotations
+
+import sys
+from typing import List
+
+from qwen3_chat import Qwen3ChatEngine, Qwen3Config, ChatMessage
 
 
-def main() -> None:
-    model_name = "Qwen/Qwen3-4B-Instruct-2507"
+def run_cli() -> None:
+    print("Qwen3 CLI Chat (type /exit to quit)")
+    print("Loading model... (first run may download weights)")
 
-    llm = LLM(
-        model=model_name,
-        trust_remote_code=True,  # Qwen provides custom model code
-        max_model_len=32768,
-    )
+    engine = Qwen3ChatEngine(Qwen3Config())
 
-    # How we want the model to sample
-    sampling_params = SamplingParams(
-        temperature=0.0,
-        top_p=1.0,
-        max_tokens=1024,    # max tokens to generate
-    )
+    # System prompt: keep it short and neutral
+    messages: List[ChatMessage] = [
+        ChatMessage(
+            role="system",
+            content=(
+                "You are a helpful, concise assistant. "
+                "Answer in the same language as the user whenever possible."
+            ),
+        )
+    ]
 
-    prompt = "What is the definition of artificial intelligence?"
+    print("Model loaded. Start chatting!\n")
 
-    outputs = llm.generate([prompt], sampling_params)
+    try:
+        while True:
+            try:
+                user_input = input("You: ").strip()
+            except EOFError:
+                print("\n[EOF] Exiting.")
+                break
 
-    for output in outputs:
-        generated_text = output.outputs[0].text
-        print(generated_text.strip())
+            if not user_input:
+                continue
+
+            if user_input.lower() in {"/exit", "/quit"}:
+                print("Bye, bye! >_<")
+                break
+
+            messages.append(ChatMessage(role="user", content=user_input))
+
+            # Generate a reply
+            reply = engine.chat(messages)
+            messages.append(ChatMessage(role="assistant", content=reply))
+
+            # Print model response
+            print(f"Qwen3: {reply}\n")
+
+    except KeyboardInterrupt:
+        print("\n[Ctrl-C] Exiting.")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
-    main()
+    run_cli()
+
