@@ -2,6 +2,9 @@
 
 An example command-line interface (CLI) for interacting with the Qwen 3.4B Instruct Chat model, enabling users to engage in conversational AI tasks directly from the terminal.
 
+<img width="1988" height="1484" alt="image" src="https://github.com/user-attachments/assets/59550fda-0916-45e9-908e-169a1a692050" />
+
+
 ## Installation and execution
 
 1. First, install the required packages and set up a virtual environment using `uv`:
