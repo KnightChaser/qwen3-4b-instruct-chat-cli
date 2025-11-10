@@ -23,7 +23,7 @@ class Qwen3Config:
     max_model_len: int = 32768
     temperature: float = 0.7
     top_p: float = 0.9
-    max_tokens: int = 512
+    max_tokens: int = 2048 # Maximum tokens to generate
 
 @dataclass
 class Qwen3ChatEngine:

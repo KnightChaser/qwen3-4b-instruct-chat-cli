@@ -5,6 +5,7 @@ import sys
 from typing import List
 
 from qwen3_chat import Qwen3ChatEngine, Qwen3Config, ChatMessage
+from io_utils import safe_input
 
 
 def run_cli() -> None:
@@ -29,7 +30,7 @@ def run_cli() -> None:
     try:
         while True:
             try:
-                user_input = input("You: ").strip()
+                user_input = safe_input("You: ").strip()
             except EOFError:
                 print("\n[EOF] Exiting.")
                 break
